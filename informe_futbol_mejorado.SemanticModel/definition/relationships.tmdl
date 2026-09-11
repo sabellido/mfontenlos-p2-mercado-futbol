@@ -1,0 +1,79 @@
+relationship 64ba8992-9a92-42ef-bf14-573f514b5d08
+	joinOnDateBehavior: datePartOnly
+	fromColumn: DIM_PLAYER.DATE_OF_BIRTH
+	toColumn: LocalDateTable_183cd91d-4367-478d-bb1d-323268dc6ba5.Date
+
+relationship 253ffab9-f849-4fa9-a4eb-b70f0158e60c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: DIM_PLAYER.CONTRACT_EXPIRATION_DATE
+	toColumn: LocalDateTable_34d09cba-3964-4b85-b6e3-98f2f22a526d.Date
+
+relationship f86a9a69-9f28-471a-a76d-7d8122bc7f53
+	joinOnDateBehavior: datePartOnly
+	fromColumn: DIM_SEASON.SEASON_START_DATE
+	toColumn: LocalDateTable_8cc713c7-69bc-4b3e-9cd7-41f30b2cab5f.Date
+
+relationship 492039f6-227a-4661-9eda-ad1dc49388ad
+	joinOnDateBehavior: datePartOnly
+	fromColumn: DIM_SEASON.SEASON_END_DATE
+	toColumn: LocalDateTable_b9eb561e-be09-4696-bc6d-64b3e9783fba.Date
+
+relationship e701d239-e239-4811-b15f-cdc0e3b2eac4
+	joinOnDateBehavior: datePartOnly
+	fromColumn: FACT_CLUB_GAME.GAME_DATE
+	toColumn: LocalDateTable_48ea7046-f117-417f-968a-0c66c59ffc5e.Date
+
+relationship c80c7a3c-1d9e-4668-8cda-488994910554
+	joinOnDateBehavior: datePartOnly
+	fromColumn: FACT_TRANSFER.TRANSFER_DATE
+	toColumn: LocalDateTable_e6216584-dbff-4848-9584-c4c3a3bf09d7.Date
+
+relationship AutoDetected_c24fa4e1-cff3-4a54-a306-3bb3167af9f4
+	fromColumn: FACT_CLUB_GAME.COMPETITION_ID
+	toColumn: DIM_COMPETITION.COMPETITION_ID
+
+relationship AutoDetected_68d01ee4-6c49-478d-915e-4953d27a278a
+	fromColumn: FACT_PLAYER_SEASON.COMPETITION_ID
+	toColumn: DIM_COMPETITION.COMPETITION_ID
+
+relationship AutoDetected_69dbad84-318c-41b3-af87-2605d61ae27f
+	fromColumn: FACT_PLAYER_SEASON.PLAYER_ID
+	toColumn: DIM_PLAYER.PLAYER_ID
+
+relationship AutoDetected_0a341914-77a1-46e4-add7-f649ae4948ae
+	fromColumn: FACT_TRANSFER.PLAYER_ID
+	toColumn: DIM_PLAYER.PLAYER_ID
+
+relationship AutoDetected_830a8ff8-f295-4b62-b9c4-e316fda50857
+	fromColumn: FACT_CLUB_GAME.SEASON_ID
+	toColumn: DIM_SEASON.SEASON_ID
+
+relationship AutoDetected_5182cba4-c838-4f71-a3d3-7dd8c8e43cfc
+	fromColumn: FACT_PLAYER_SEASON.SEASON_ID
+	toColumn: DIM_SEASON.SEASON_ID
+
+relationship b1ad2035-7b17-cfdd-3faf-faf5bbea143f
+	fromColumn: FACT_CLUB_GAME.CLUB_ID
+	toColumn: DIM_CLUB.CLUB_ID
+
+relationship 6d3af048-b702-db54-fd22-befc171d54f6
+	fromColumn: FACT_TRANSFER.TO_CLUB_ID
+	toColumn: DIM_CLUB.CLUB_ID
+
+relationship eeccaabe-be42-d488-a72f-90dd7a6fe651
+	isActive: false
+	fromColumn: FACT_TRANSFER.FROM_CLUB_ID
+	toColumn: DIM_CLUB.CLUB_ID
+
+relationship fa4e4e69-8640-60ad-5a62-c7af25e20fd3
+	fromColumn: FACT_PLAYER_SEASON.CLUB_ID
+	toColumn: DIM_CLUB.CLUB_ID
+
+relationship 1cb1cdb4-8305-4e57-8b5b-b0a7b1070e06
+	fromColumn: FACT_PLAYER_MARKET_VALUE.PLAYER_ID
+	toColumn: DIM_PLAYER.PLAYER_ID
+
+relationship 39da9224-198a-42a2-8ab8-91a43ad290f5
+	fromColumn: VW_PLAYER_VALUE_TIMELINE.PLAYER_ID
+	toColumn: DIM_PLAYER.PLAYER_ID
+

@@ -1,0 +1,115 @@
+table DIM_COMPETITION
+	lineageTag: 825d4148-dad9-410c-8bf6-6fd4ddb7e848
+
+	column COMPETITION_ID
+		dataType: string
+		lineageTag: 342c4110-d360-4b54-9787-11bf77f74243
+		summarizeBy: none
+		sourceColumn: COMPETITION_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column COMPETITION_CODE
+		dataType: string
+		lineageTag: a057969d-d8d1-4e43-866e-ccf6ff9c4760
+		summarizeBy: none
+		sourceColumn: COMPETITION_CODE
+
+		annotation SummarizationSetBy = Automatic
+
+	column COMPETITION_NAME
+		dataType: string
+		lineageTag: cb8d293c-e8c5-4780-be6b-3806e85117c8
+		summarizeBy: none
+		sourceColumn: COMPETITION_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column DISPLAY_NAME
+		dataType: string
+		lineageTag: 1835d923-d37b-4ab1-a4e6-a82da16446ba
+		summarizeBy: none
+		sourceColumn: DISPLAY_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column SUB_TYPE
+		dataType: string
+		lineageTag: 81e76625-4eb8-45f7-bced-f37f7fa4bef7
+		summarizeBy: none
+		sourceColumn: SUB_TYPE
+
+		annotation SummarizationSetBy = Automatic
+
+	column COMPETITION_TYPE
+		dataType: string
+		lineageTag: b017c32c-b7e4-439e-84ec-2c2e786724da
+		summarizeBy: none
+		sourceColumn: COMPETITION_TYPE
+
+		annotation SummarizationSetBy = Automatic
+
+	column COUNTRY_NAME
+		dataType: string
+		lineageTag: 525cd702-57b0-481c-9dfd-f6dbbd2fa0de
+		summarizeBy: none
+		sourceColumn: COUNTRY_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column DOMESTIC_LEAGUE_CODE
+		dataType: string
+		lineageTag: 31a51235-9925-4460-b95e-512464d1b4ff
+		summarizeBy: none
+		sourceColumn: DOMESTIC_LEAGUE_CODE
+
+		annotation SummarizationSetBy = Automatic
+
+	column CONFEDERATION
+		dataType: string
+		lineageTag: c3549f19-5b22-4ece-8ec0-dfc66e86f3fc
+		summarizeBy: none
+		sourceColumn: CONFEDERATION
+
+		annotation SummarizationSetBy = Automatic
+
+	column TOTAL_CLUBS
+		dataType: double
+		lineageTag: 3498e657-4c2b-47b7-af82-2cb2bf79248d
+		summarizeBy: sum
+		sourceColumn: TOTAL_CLUBS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TIER
+		dataType: string
+		lineageTag: 61e53813-2bea-47aa-b778-d8113aa5f2e0
+		summarizeBy: none
+		sourceColumn: TIER
+
+		annotation SummarizationSetBy = Automatic
+
+	column URL
+		dataType: string
+		lineageTag: dfb9ebef-8588-434d-87f2-c751aadb137b
+		summarizeBy: none
+		sourceColumn: URL
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DIM_COMPETITION = m
+		mode: import
+		source =
+				let
+				    Origen = Snowflake.Databases("DOOHLLX-DU69027.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    FOOTBALL_Database = Origen{[Name="FOOTBALL",Kind="Database"]}[Data],
+				    GOLD_Schema = FOOTBALL_Database{[Name="GOLD",Kind="Schema"]}[Data],
+				    DIM_COMPETITION_Table = GOLD_Schema{[Name="DIM_COMPETITION",Kind="Table"]}[Data],
+				    #"Columnas con nombre cambiado" = Table.RenameColumns(DIM_COMPETITION_Table,{{"TYPE", "COMPETITION_TYPE"}})
+				in
+				    #"Columnas con nombre cambiado"
+
+	annotation PBI_ResultType = Table
+

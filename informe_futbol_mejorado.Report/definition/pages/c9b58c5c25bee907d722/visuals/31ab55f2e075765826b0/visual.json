@@ -1,0 +1,84 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "31ab55f2e075765826b0",
+  "position": {
+    "x": 10.962479608482871,
+    "y": 0,
+    "z": 0,
+    "height": 140.94616639477977,
+    "width": 949.03752039151709,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_PLAYER_SEASON"
+                    }
+                  },
+                  "Property": "Num Jugadores"
+                }
+              },
+              "queryRef": "FACT_PLAYER_SEASON.Num Jugadores",
+              "nativeQueryRef": "Num Jugadores"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_PLAYER_SEASON"
+                    }
+                  },
+                  "Property": "Score Medio"
+                }
+              },
+              "queryRef": "FACT_PLAYER_SEASON.Score Medio",
+              "nativeQueryRef": "Score Medio"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_PLAYER_SEASON"
+                    }
+                  },
+                  "Property": "Valor Medio de Mercado"
+                }
+              },
+              "queryRef": "FACT_PLAYER_SEASON.Valor Medio de Mercado",
+              "nativeQueryRef": "Valor Medio de Mercado"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "FACT_PLAYER_SEASON"
+                  }
+                },
+                "Property": "Num Jugadores"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

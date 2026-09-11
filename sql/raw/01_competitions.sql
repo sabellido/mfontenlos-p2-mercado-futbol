@@ -1,9 +1,18 @@
 -- =====================================================================
 -- RAW · 01_competitions.sql
--- Tabla: competitions.csv (11 columnas)
+-- Tabla: competitions.csv
 -- =====================================================================
 
--- 1. Descubrir columnas reales (nombres y orden)
+use DATABASE FOOTBALL;
+use SCHEMA RAW;
+
+-- 1. (Opcional) comprobar visualmente las columnas reales antes de crear
+-- la tabla. Ya no es imprescindible para el paso 3 (MATCH_BY_COLUMN_NAME
+-- empareja por nombre en tiempo de carga, no hace falta saber cuántas
+-- columnas tiene el CSV de antemano), pero es una buena forma de
+-- detectar nombres raros o columnas inesperadas antes de automatizar.
+
+/*
 SELECT *
 FROM TABLE(
   INFER_SCHEMA(
@@ -12,8 +21,12 @@ FROM TABLE(
     FILES => 'competitions.csv'
   )
 );
+*/
 
--- 2. Tabla RAW generada desde el propio INFER_SCHEMA (todo STRING)
+
+-- 2. descubre las columnas del CSV → 
+-- describe cada una como texto nullable, en el orden 
+-- original → crea la tabla con exactamente esas columnas
 CREATE OR REPLACE TABLE FOOTBALL.RAW.COMPETITIONS
   USING TEMPLATE (
     SELECT ARRAY_AGG(
@@ -32,34 +45,39 @@ CREATE OR REPLACE TABLE FOOTBALL.RAW.COMPETITIONS
     )
   );
 
--- Columnas de metadatos, añadidas al final (mismo orden que usa el pipe)
+-- Columnas de metadatos. Se rellenan solas en el COPY INTO del paso 3
+-- vía INCLUDE_METADATA, no hace falta tocarlas a mano nunca.
 ALTER TABLE FOOTBALL.RAW.COMPETITIONS
   ADD COLUMN _SOURCE_FILE STRING,
              _LOADED_AT   TIMESTAMP_NTZ;
 
 -- 3. Pipe: ingesta automática vía Snowpipe + Event Grid.
--- Sin lista explícita de columnas: el SELECT produce 13 valores (11 del
--- CSV + 2 de metadatos) en el mismo orden que las 13 columnas de la
--- tabla, así que Snowflake las inserta posicionalmente sin ambigüedad.
+-- MATCH_BY_COLUMN_NAME empareja cada columna del CSV con la columna del
+-- mismo nombre en la tabla (usa la cabecera real del archivo, gracias a
+-- PARSE_HEADER = TRUE en FF_CSV_INFER) 
+-- ERROR_ON_COLUMN_COUNT_MISMATCH permite que haya más columnas en la tabla (las 2 de metadatos) que en el CSV.
+ 
+
+
 CREATE OR REPLACE PIPE FOOTBALL.RAW.PIPE_COMPETITIONS
   AUTO_INGEST = TRUE
   INTEGRATION = 'NI_AZURE_BLOB_EVENTS'
 AS
 COPY INTO FOOTBALL.RAW.COMPETITIONS
-FROM (
-    SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
-           METADATA$FILENAME,
-           CURRENT_TIMESTAMP()
-    FROM @stage_raw_blob
-)
+FROM @stage_raw_blob
+FILE_FORMAT = (FORMAT_NAME = 'FOOTBALL.RAW.FF_CSV_INFER', ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE)
 PATTERN = '.*competitions\\.csv'
-FILE_FORMAT = (FORMAT_NAME = 'FOOTBALL.RAW.FF_CSV_STANDARD');
+MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+INCLUDE_METADATA = (
+  _SOURCE_FILE = METADATA$FILENAME,
+  _LOADED_AT   = METADATA$START_SCAN_TIME
+);
 
--- 4. Backfill: el archivo que ya estaba en Blob antes de crear el pipe
--- no dispara un evento nuevo. REFRESH le dice al pipe que revise el
--- stage y encole también lo que ya estaba ahí.
+-- 4. Backfill del histórico ya subido antes de crear el pipe
 ALTER PIPE FOOTBALL.RAW.PIPE_COMPETITIONS REFRESH;
 
 -- Validación:
 -- SELECT * FROM FOOTBALL.RAW.COMPETITIONS;
 -- SELECT SYSTEM$PIPE_STATUS('FOOTBALL.RAW.PIPE_COMPETITIONS');
+
+SELECT DISTINCT NAME, COUNTRY_NAME, TYPE FROM SILVER.COMPETITIONS

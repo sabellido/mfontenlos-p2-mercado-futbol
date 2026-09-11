@@ -1,0 +1,137 @@
+-- =====================================================================
+-- GOLD · 05_dim_player.sql
+-- FOOTBALL.SILVER.PLAYERS -> FOOTBALL.GOLD.DIM_PLAYER
+--
+-- IMPORTANTE: sustituye <TU_WAREHOUSE> por el nombre real de tu
+-- warehouse antes de ejecutar el CREATE TASK.
+--
+-- Passthrough de SILVER más CURRENT_AGE calculada, para no obligar a
+-- Power BI a calcularla con DAX.
+--
+-- AVISO: CURRENT_AGE se calcula en el momento en que la task procesa la
+-- fila, y no se vuelve a recalcular después salvo que llegue una fila
+-- nueva de ese jugador en SILVER (p.ej. un cambio de club actualiza su
+-- registro en PLAYERS, lo que dispararía el STREAM y recalcularía la
+-- edad de paso). Es una edad aproximada para agrupar por rangos, no
+-- pensada para precisión exacta día a día.
+-- =====================================================================
+
+-- CREATE OR REPLACE, no IF NOT EXISTS: fuerza el esquema aquí definido aunque ya exista una DIM_PLAYER previa con columnas distintas.
+CREATE OR REPLACE TABLE FOOTBALL.GOLD.DIM_PLAYER (
+  PLAYER_ID                              NUMBER        NOT NULL,
+  PLAYER_NAME                            STRING,
+  FIRST_NAME                             STRING,
+  LAST_NAME                              STRING,
+  DATE_OF_BIRTH                          DATE,
+  CURRENT_AGE                            NUMBER,
+  COUNTRY_OF_BIRTH                       STRING,
+  CITY_OF_BIRTH                          STRING,
+  COUNTRY_OF_CITIZENSHIP                 STRING,
+  POSITION                               STRING,
+  SUB_POSITION                           STRING,
+  FOOT                                   STRING,
+  HEIGHT_IN_CM                           NUMBER,
+  CURRENT_CLUB_ID                        NUMBER,
+  CURRENT_CLUB_NAME                      STRING,
+  CURRENT_CLUB_DOMESTIC_COMPETITION_ID   STRING,
+  MARKET_VALUE_IN_EUR                    NUMBER,
+  HIGHEST_MARKET_VALUE_IN_EUR            NUMBER,
+  CONTRACT_EXPIRATION_DATE               DATE,
+  AGENT_NAME                             STRING,
+  LAST_SEASON                            NUMBER,
+  IMAGE_URL                              STRING,
+  URL                                    STRING,
+  PRIMARY KEY (PLAYER_ID)
+);
+
+-- Siembra inicial:
+INSERT INTO FOOTBALL.GOLD.DIM_PLAYER (
+  PLAYER_ID, PLAYER_NAME, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, CURRENT_AGE,
+  COUNTRY_OF_BIRTH, CITY_OF_BIRTH, COUNTRY_OF_CITIZENSHIP, POSITION,
+  SUB_POSITION, FOOT, HEIGHT_IN_CM, CURRENT_CLUB_ID, CURRENT_CLUB_NAME,
+  CURRENT_CLUB_DOMESTIC_COMPETITION_ID, MARKET_VALUE_IN_EUR,
+  HIGHEST_MARKET_VALUE_IN_EUR, CONTRACT_EXPIRATION_DATE, AGENT_NAME,
+  LAST_SEASON, IMAGE_URL, URL
+)
+SELECT
+  PLAYER_ID, NAME AS PLAYER_NAME, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH,
+  DATEDIFF('year', DATE_OF_BIRTH, CURRENT_DATE()),
+  COUNTRY_OF_BIRTH, CITY_OF_BIRTH, COUNTRY_OF_CITIZENSHIP, POSITION,
+  SUB_POSITION, FOOT, HEIGHT_IN_CM, CURRENT_CLUB_ID, CURRENT_CLUB_NAME,
+  CURRENT_CLUB_DOMESTIC_COMPETITION_ID, MARKET_VALUE_IN_EUR,
+  HIGHEST_MARKET_VALUE_IN_EUR, CONTRACT_EXPIRATION_DATE, AGENT_NAME,
+  LAST_SEASON, IMAGE_URL, URL
+FROM FOOTBALL.SILVER.PLAYERS;
+
+CREATE STREAM IF NOT EXISTS FOOTBALL.GOLD.STREAM_SILVER_PLAYERS
+  ON TABLE FOOTBALL.SILVER.PLAYERS
+  APPEND_ONLY = TRUE;
+
+CREATE OR REPLACE TASK FOOTBALL.GOLD.TASK_LOAD_DIM_PLAYER
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = 'USING CRON 0 9 * * 6 Europe/Madrid'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('FOOTBALL.GOLD.STREAM_SILVER_PLAYERS')
+AS
+MERGE INTO FOOTBALL.GOLD.DIM_PLAYER AS tgt
+USING (
+  SELECT
+    PLAYER_ID, NAME AS PLAYER_NAME, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH,
+    DATEDIFF('year', DATE_OF_BIRTH, CURRENT_DATE()) AS CURRENT_AGE,
+    COUNTRY_OF_BIRTH, CITY_OF_BIRTH, COUNTRY_OF_CITIZENSHIP, POSITION,
+    SUB_POSITION, FOOT, HEIGHT_IN_CM, CURRENT_CLUB_ID, CURRENT_CLUB_NAME,
+    CURRENT_CLUB_DOMESTIC_COMPETITION_ID, MARKET_VALUE_IN_EUR,
+    HIGHEST_MARKET_VALUE_IN_EUR, CONTRACT_EXPIRATION_DATE, AGENT_NAME,
+    LAST_SEASON, IMAGE_URL, URL
+  FROM FOOTBALL.GOLD.STREAM_SILVER_PLAYERS
+  WHERE PLAYER_ID IS NOT NULL
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY PLAYER_ID
+    ORDER BY _SILVER_LOADED_AT DESC
+  ) = 1
+) AS src
+ON tgt.PLAYER_ID = src.PLAYER_ID
+WHEN MATCHED THEN UPDATE SET
+  tgt.PLAYER_NAME                          = src.PLAYER_NAME,
+  tgt.FIRST_NAME                           = src.FIRST_NAME,
+  tgt.LAST_NAME                            = src.LAST_NAME,
+  tgt.DATE_OF_BIRTH                        = src.DATE_OF_BIRTH,
+  tgt.CURRENT_AGE                          = src.CURRENT_AGE,
+  tgt.COUNTRY_OF_BIRTH                     = src.COUNTRY_OF_BIRTH,
+  tgt.CITY_OF_BIRTH                        = src.CITY_OF_BIRTH,
+  tgt.COUNTRY_OF_CITIZENSHIP               = src.COUNTRY_OF_CITIZENSHIP,
+  tgt.POSITION                             = src.POSITION,
+  tgt.SUB_POSITION                         = src.SUB_POSITION,
+  tgt.FOOT                                 = src.FOOT,
+  tgt.HEIGHT_IN_CM                         = src.HEIGHT_IN_CM,
+  tgt.CURRENT_CLUB_ID                      = src.CURRENT_CLUB_ID,
+  tgt.CURRENT_CLUB_NAME                    = src.CURRENT_CLUB_NAME,
+  tgt.CURRENT_CLUB_DOMESTIC_COMPETITION_ID = src.CURRENT_CLUB_DOMESTIC_COMPETITION_ID,
+  tgt.MARKET_VALUE_IN_EUR                  = src.MARKET_VALUE_IN_EUR,
+  tgt.HIGHEST_MARKET_VALUE_IN_EUR          = src.HIGHEST_MARKET_VALUE_IN_EUR,
+  tgt.CONTRACT_EXPIRATION_DATE             = src.CONTRACT_EXPIRATION_DATE,
+  tgt.AGENT_NAME                           = src.AGENT_NAME,
+  tgt.LAST_SEASON                          = src.LAST_SEASON,
+  tgt.IMAGE_URL                            = src.IMAGE_URL,
+  tgt.URL                                  = src.URL
+WHEN NOT MATCHED THEN INSERT (
+  PLAYER_ID, PLAYER_NAME, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, CURRENT_AGE,
+  COUNTRY_OF_BIRTH, CITY_OF_BIRTH, COUNTRY_OF_CITIZENSHIP, POSITION,
+  SUB_POSITION, FOOT, HEIGHT_IN_CM, CURRENT_CLUB_ID, CURRENT_CLUB_NAME,
+  CURRENT_CLUB_DOMESTIC_COMPETITION_ID, MARKET_VALUE_IN_EUR,
+  HIGHEST_MARKET_VALUE_IN_EUR, CONTRACT_EXPIRATION_DATE, AGENT_NAME,
+  LAST_SEASON, IMAGE_URL, URL
+) VALUES (
+  src.PLAYER_ID, src.PLAYER_NAME, src.FIRST_NAME, src.LAST_NAME, src.DATE_OF_BIRTH,
+  src.CURRENT_AGE, src.COUNTRY_OF_BIRTH, src.CITY_OF_BIRTH,
+  src.COUNTRY_OF_CITIZENSHIP, src.POSITION, src.SUB_POSITION, src.FOOT,
+  src.HEIGHT_IN_CM, src.CURRENT_CLUB_ID, src.CURRENT_CLUB_NAME,
+  src.CURRENT_CLUB_DOMESTIC_COMPETITION_ID, src.MARKET_VALUE_IN_EUR,
+  src.HIGHEST_MARKET_VALUE_IN_EUR, src.CONTRACT_EXPIRATION_DATE,
+  src.AGENT_NAME, src.LAST_SEASON, src.IMAGE_URL, src.URL
+);
+
+ALTER TASK FOOTBALL.GOLD.TASK_LOAD_DIM_PLAYER RESUME;
+
+-- Validación:
+-- SELECT COUNT(*), COUNT(DISTINCT PLAYER_ID) FROM FOOTBALL.GOLD.DIM_PLAYER;

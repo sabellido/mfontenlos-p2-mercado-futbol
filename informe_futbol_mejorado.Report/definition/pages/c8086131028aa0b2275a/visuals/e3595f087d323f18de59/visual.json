@@ -1,0 +1,285 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "e3595f087d323f18de59",
+  "position": {
+    "x": 39.901477832512313,
+    "y": 67.832512315270932,
+    "z": 2000,
+    "height": 292.61083743842363,
+    "width": 1839.4581280788177,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "IMAGE_URL"
+                }
+              },
+              "queryRef": "DIM_PLAYER.IMAGE_URL",
+              "nativeQueryRef": "Imagen",
+              "displayName": "Imagen"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "PLAYER_NAME"
+                }
+              },
+              "queryRef": "DIM_PLAYER.PLAYER_NAME",
+              "nativeQueryRef": "PLAYER_NAME",
+              "displayName": "Nombre"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "POSITION"
+                }
+              },
+              "queryRef": "DIM_PLAYER.POSITION",
+              "nativeQueryRef": "POSITION",
+              "displayName": "Posición"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "SUB_POSITION"
+                }
+              },
+              "queryRef": "DIM_PLAYER.SUB_POSITION",
+              "nativeQueryRef": "SUB_POSITION",
+              "displayName": "Posición Específica"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "DATE_OF_BIRTH"
+                }
+              },
+              "queryRef": "DIM_PLAYER.DATE_OF_BIRTH",
+              "nativeQueryRef": "DATE_OF_BIRTH",
+              "displayName": "Fecha de Nacimiento"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "DIM_PLAYER"
+                        }
+                      },
+                      "Property": "CURRENT_AGE"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(DIM_PLAYER.CURRENT_AGE)",
+              "nativeQueryRef": "CURRENT_AGE",
+              "displayName": "Edad"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "COUNTRY_OF_CITIZENSHIP"
+                }
+              },
+              "queryRef": "DIM_PLAYER.COUNTRY_OF_CITIZENSHIP",
+              "nativeQueryRef": "COUNTRY_OF_CITIZENSHIP",
+              "displayName": "Nacionalidad"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "DIM_PLAYER"
+                        }
+                      },
+                      "Property": "HEIGHT_IN_CM"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(DIM_PLAYER.HEIGHT_IN_CM)",
+              "nativeQueryRef": "HEIGHT_IN_CM",
+              "displayName": "Altura (cm)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "FOOT"
+                }
+              },
+              "queryRef": "DIM_PLAYER.FOOT",
+              "nativeQueryRef": "FOOT",
+              "displayName": "Pie Preferido"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DIM_PLAYER"
+                    }
+                  },
+                  "Property": "CURRENT_CLUB_NAME"
+                }
+              },
+              "queryRef": "DIM_PLAYER.CURRENT_CLUB_NAME",
+              "nativeQueryRef": "CURRENT_CLUB_NAME",
+              "displayName": "Club Actual / Último Club"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "DIM_PLAYER"
+                        }
+                      },
+                      "Property": "LAST_SEASON"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(DIM_PLAYER.LAST_SEASON)",
+              "nativeQueryRef": "LAST_SEASON",
+              "displayName": "Última Temporada"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "DIM_PLAYER"
+                  }
+                },
+                "Property": "PLAYER_NAME"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "13D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Datos del Jugador'"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

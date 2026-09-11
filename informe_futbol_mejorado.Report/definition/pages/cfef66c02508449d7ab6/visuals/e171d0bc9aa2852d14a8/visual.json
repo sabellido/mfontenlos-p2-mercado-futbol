@@ -1,0 +1,70 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "e171d0bc9aa2852d14a8",
+  "position": {
+    "x": 10,
+    "y": 0,
+    "z": 1000,
+    "height": 141,
+    "width": 630,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_TRANSFER"
+                    }
+                  },
+                  "Property": "Total Invertido"
+                }
+              },
+              "queryRef": "FACT_TRANSFER.Total Invertido",
+              "nativeQueryRef": "Total Invertido"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_TRANSFER"
+                    }
+                  },
+                  "Property": "Número de Fichajes"
+                }
+              },
+              "queryRef": "FACT_TRANSFER.Número de Fichajes",
+              "nativeQueryRef": "Número de Fichajes"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "FACT_TRANSFER"
+                  }
+                },
+                "Property": "Total Invertido"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

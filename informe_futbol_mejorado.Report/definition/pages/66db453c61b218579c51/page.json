@@ -1,0 +1,115 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "66db453c61b218579c51",
+  "displayName": "Análisis Jugadores",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "a05c5c844a80093e53ea",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "DIM_CLUB"
+              }
+            },
+            "Property": "CLUB_NAME"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "d",
+              "Entity": "DIM_CLUB",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "In": {
+                  "Expressions": [
+                    {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Source": "d"
+                          }
+                        },
+                        "Property": "CLUB_NAME"
+                      }
+                    }
+                  ],
+                  "Values": [
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'Real Sociedad'"
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "howCreated": "Drillthrough"
+      },
+      {
+        "name": "bdb5cdba74050145e5d6",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "DIM_COMPETITION"
+              }
+            },
+            "Property": "COMPETITION_NAME"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "Drillthrough"
+      }
+    ]
+  },
+  "pageBinding": {
+    "name": "1c1f693291265b8d1547",
+    "type": "Drillthrough",
+    "parameters": [
+      {
+        "name": "95dfb9c00106ae341aeb",
+        "boundFilter": "a05c5c844a80093e53ea",
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "DIM_CLUB"
+              }
+            },
+            "Property": "CLUB_NAME"
+          }
+        }
+      },
+      {
+        "name": "80b94794d081d8107c70",
+        "boundFilter": "bdb5cdba74050145e5d6",
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "DIM_COMPETITION"
+              }
+            },
+            "Property": "COMPETITION_NAME"
+          }
+        }
+      }
+    ]
+  }
+}

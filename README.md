@@ -1,10 +1,45 @@
-# Arquitectura de ingesta — Proyecto p2-futbol
+# Arquitectura del pipeline — Proyecto p2-futbol
 
-Este documento describe la primera fase del pipeline de datos: la descarga automática y semanal del dataset [Football Data from Transfermarkt](https://www.kaggle.com/datasets/davidcariboo/player-scores) de Kaggle hacia una zona *raw* en Azure Blob Storage, orquestada con Azure Data Factory (ADF).
+Pipeline de datos completo, de punta a punta, para el análisis de valor de mercado y traspasos de futbolistas: desde la descarga automática del dataset [Football Data from Transfermarkt](https://www.kaggle.com/datasets/davidcariboo/player-scores) de Kaggle hasta un informe de Power BI, pasando por un modelado en tres capas (RAW → SILVER → GOLD) en Snowflake.
 
-> **Estado**: esta fase cubre Kaggle → Azure Blob Storage. La siguiente fase (Blob → Snowflake, vía Storage Integration + Snowpipe con auto-ingest sobre Event Grid) se documentará en un README aparte cuando esté construida.
+> **Estado**: pipeline completo implementado de punta a punta — Kaggle → Azure Blob Storage (ADF) → Snowflake RAW → SILVER → GOLD → Power BI —, con ingesta y transformación automatizadas por eventos (Snowpipe + Event Grid) y por `STREAM`/`TASK` en Snowflake, sin intervención manual en la operación semanal.
 
-## 1. Flujo del dato
+## Visión general
+
+```mermaid
+flowchart LR
+    K["Kaggle API\ndataset player-scores"]
+    ADF["Azure Data Factory\ndescarga + descomprime\n(semanal)"]
+    BLOB[("Azure Blob Storage\nraw/landing/AAAA/MM/DD/")]
+    RAW[("Snowflake RAW\ncopia fiel, todo STRING")]
+    SILVER[("Snowflake SILVER\ntipado + limpieza + dedup")]
+    GOLD[("Snowflake GOLD\nesquema en estrella")]
+    PBI["Power BI\ninforme de análisis"]
+
+    K --> ADF --> BLOB
+    BLOB -->|"Snowpipe\nauto-ingest vía Event Grid"| RAW
+    RAW -->|"STREAM + TASK"| SILVER
+    SILVER -->|"STREAM + TASK"| GOLD
+    GOLD --> PBI
+```
+
+Cada fase se automatiza con el mecanismo nativo del servicio donde vive, en vez de una orquestación central que las conecte a todas: un *trigger* semanal en ADF, Snowpipe con auto-ingest para Blob → RAW, y `STREAM`+`TASK` encadenadas para RAW → SILVER → GOLD. El resultado es una cadena que se refresca sola cada semana sin que nadie tenga que ejecutar nada a mano, con cada eslabón desacoplado del siguiente (si uno falla, los demás no se bloquean, solo trabajan con el dato que ya tenían).
+
+Documentación detallada de cada fase:
+
+| Fase | Qué hace | Documentación |
+|---|---|---|
+| 1. Ingesta | Kaggle → Azure Blob Storage, vía Azure Data Factory | Este documento (sección 1) |
+| 2a. RAW | Blob → Snowflake, copia fiel sin tipar | [`sql/raw/README.md`](sql/raw/README.md) |
+| 2b. SILVER | Tipado, limpieza y deduplicación | [`sql/silver/README.md`](sql/silver/README.md) |
+| 2c. GOLD | Esquema en estrella para consumo analítico | [`sql/gold/README.md`](sql/gold/README.md) |
+| 3. Consumo | Informe de Power BI sobre GOLD | Este documento (sección 3) |
+
+## 1. Ingesta: Kaggle → Azure Blob Storage (Azure Data Factory)
+
+Descarga automática y semanal del dataset de Kaggle hacia una zona *raw* en Azure Blob Storage, orquestada con Azure Data Factory (ADF).
+
+### 1.1 Flujo del dato
 
 ```mermaid
 flowchart LR
@@ -22,7 +57,7 @@ Los tres pasos, en palabras:
 2. **Almacenamiento intermedio** — el `.zip` queda aparcado en `raw/_zips/player-scores.zip`. Se conserva (no se borra) como copia exacta de lo que sirvió Kaggle esa semana: permite reprocesar la extracción sin volver a golpear la API si algo falla más adelante.
 3. **Descompresión con partición por fecha** — una segunda actividad lee ese mismo zip, ahora desde Blob (que sí soporta lectura aleatoria), y extrae los CSV a `raw/landing/AAAA/MM/DD/`, usando la fecha de ejecución del pipeline. Cada semana genera una carpeta nueva, conservando el histórico completo de snapshots en vez de sobrescribir el anterior.
 
-## 2. Recursos creados y relación entre ellos
+### 1.2 Recursos creados y relación entre ellos
 
 | Recurso | Nombre | Tipo | Papel |
 |---|---|---|---|
@@ -59,10 +94,30 @@ Los tres pasos, en palabras:
   - Actividad `Copy_Extract_Zip` (se ejecuta solo si la anterior tiene éxito): `DS_Blob_Zip_Staging` → `DS_Blob_Raw_Extracted`.
 - **Trigger** `TR_Weekly_Kaggle_Sync`: tipo *Schedule*, recurrencia semanal, zona horaria Madrid. Publicado junto con el pipeline (`Publish all`) para quedar activo.
 
-## 3. Decisiones de diseño a recordar para la defensa
+## 2. Transformación en Snowflake: RAW → SILVER → GOLD
 
-- **Por qué dos Copy Activities y no una**: una fuente HTTP no soporta lectura aleatoria (*seek*), y el formato ZIP necesita saltar al final del archivo para leer su índice. Blob Storage sí la soporta, así que primero se aterriza el zip sin tocarlo y luego se descomprime desde ahí.
-- **Por qué se conserva el `.zip` en `_zips/`**: es la prueba exacta de lo que Kaggle sirvió esa semana; permite reprocesar la extracción sin depender de la API de Kaggle si hace falta.
-- **Por qué la carpeta de destino lleva la fecha**: conserva el histórico semana a semana (zona *raw* inmutable) en vez de sobrescribir; además evita colisiones si el pipeline se re-ejecuta.
-- **Por qué todo usa Managed Identity y no claves/cuentas de almacenamiento**: ninguna credencial de Azure queda escrita en ningún sitio; los permisos se gestionan por rol (RBAC) y son revocables sin rotar secretos.
-- **Por qué el usuario de Kaggle va en texto plano y la clave no**: el conector HTTP de ADF solo permite vincular a Key Vault el campo `password`; el nombre de usuario no se trata como secreto en este conector.
+De Blob a Snowflake y, dentro de Snowflake, de un aterrizaje sin tipar a un esquema en estrella listo para Power BI. Cada capa tiene su propio README con el detalle completo (decisiones de diseño, automatización, estructura de archivos); aquí solo el resumen de qué responsabilidad tiene cada una:
+
+- **[RAW](sql/raw/README.md)** — aterrizaje fiel del CSV dentro de Snowflake, todo `STRING`, sin ninguna limpieza. La ingesta desde Blob es automática y basada en eventos: Snowpipe con `AUTO_INGEST`, activado por notificaciones de Azure Event Grid cuando llega un blob nuevo — no hay sondeo ni horario propio en Snowflake para esta capa.
+- **[SILVER](sql/silver/README.md)** — tipado real (`TRY_CAST`), estandarización de nulos y deduplicación por clave de negocio (`QUALIFY ROW_NUMBER()`). La automatización RAW → SILVER usa `STREAM` (qué filas son nuevas) + `TASK` programada (cada sábado 8:30, Europe/Madrid) con un `MERGE` idempotente.
+- **[GOLD](sql/gold/README.md)** — esquema en estrella (5 dimensiones + 3 hechos + 1 vista de reporting) con la lógica de negocio del proyecto: cálculo de `SCORE` tipo Bota de Oro tiered por país de competición, criterio de valor de mercado, y las ampliaciones sobre el mínimo del enunciado (`FACT_TRANSFER`, `FACT_CLUB_GAME`, `FACT_PLAYER_MARKET_VALUE`, `VW_PLAYER_VALUE_TIMELINE`). Automatización GOLD → mismo patrón `STREAM`+`TASK` que SILVER, programada 30 minutos después (9:00).
+
+Las tres capas encadenan su periodicidad con el mismo criterio: 30 minutos de margen entre capa y capa, anclados a la hora real en que llega dato nuevo desde ADF (8:00), no a un sondeo arbitrario.
+
+## 3. Consumo: informe de Power BI
+
+El informe (`informe_futbol_mejorado.pbip`) se conecta directamente a `FOOTBALL.GOLD` y no aplica ninguna transformación de datos propia (Power Query solo importa; toda la lógica de limpieza y de negocio ya vive en SILVER/GOLD). Sí añade, en el modelo semántico (TMDL), medidas DAX y un puñado de columnas calculadas cuando la necesidad es específica de un visual concreto y no una entidad de negocio reutilizable — por eso viven en el informe y no se han empujado a GOLD:
+
+- **`FACT_TRANSFER`**: medidas `Total Invertido` (`SUM(TRANSFER_FEE)`) y `Número de Fichajes` (`COUNTROWS`), para los KPI de la página de Transferencias; columnas calculadas `AGE_AT_TRANSFER` (edad del jugador en la fecha del traspaso, vía `RELATED(DIM_PLAYER[DATE_OF_BIRTH])`) y `AGE_BRACKET`/`AGE_BRACKET_SORT` (franja de edad con orden custom), usadas en el gráfico de burbujas que cruza edad, importe invertido y número de fichajes.
+
+**Páginas del informe**:
+
+| Página | Contenido |
+|---|---|
+| Overview | Vista general del dataset completo |
+| Análisis Jugadores | Comparativa y ranking de jugadores, con la tabla de detalle jugador-temporada-club-competición |
+| Detalle Jugador (drillthrough) | Ficha de un jugador: datos personales, evolución de valor de mercado combinada con traspasos (`VW_PLAYER_VALUE_TIMELINE`), historial de transferencias, detalle por temporada y competición |
+| Transferencias | Fichajes más caros, importe pagado vs. valor de mercado, gasto por posición, evolución del gasto por temporada, y el cruce edad/importe/nº de fichajes |
+| Portada | Página de inicio con navegación a las demás páginas — en construcción: la navegación funciona por defecto de Power BI (acción de página en los botones, configurada manualmente en Desktop); el estilo visual (relleno translúcido, texto) también se está terminando de ajustar a mano en el panel de Formato |
+
+No existe todavía un README dedicado a esta capa (el informe cambia con más frecuencia que el modelo de datos); este resumen se mantiene aquí, en el documento general, y se ampliará o se separará en su propio archivo si el informe crece mucho más.

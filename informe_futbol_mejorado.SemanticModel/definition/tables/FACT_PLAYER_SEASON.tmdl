@@ -1,0 +1,181 @@
+table FACT_PLAYER_SEASON
+	lineageTag: 1d7a5990-ff19-462b-9f2d-cbb96b73bf05
+
+	measure 'Num Jugadores' = DISTINCTCOUNT(FACT_PLAYER_SEASON[PLAYER_ID])
+		formatString: 0
+		displayFolder: Medidas
+		lineageTag: a4e05ca0-471e-498c-b52b-d3d9cb347972
+
+	measure 'Valor Medio de Mercado' = AVERAGE(FACT_PLAYER_SEASON[MARKET_VALUE_EUR])
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: Medidas
+		lineageTag: 23c4cfd0-88c6-4d6e-b795-85993248443c
+
+	measure 'Score Medio' = AVERAGE(FACT_PLAYER_SEASON[SCORE])
+		displayFolder: Medidas
+		lineageTag: 1163d871-067c-4b7e-88bb-8dc2b8003b13
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure Goles = SUM(FACT_PLAYER_SEASON[GOALS])
+		formatString: 0
+		displayFolder: Medidas
+		lineageTag: dd90022c-f1ab-49e6-931c-328573463bd6
+
+	measure Asistencias = SUM(FACT_PLAYER_SEASON[ASSISTS])
+		formatString: 0
+		displayFolder: Medidas
+		lineageTag: 455a346d-549e-4391-bcb0-125f3f36c85f
+
+	measure 'Minutos Jugados' = SUM(FACT_PLAYER_SEASON[MINUTES_PLAYED])
+		formatString: 0
+		displayFolder: Medidas
+		lineageTag: e5e1ef27-f6dc-4a98-b7b7-719b87a0dc17
+
+	measure 'Valor Total de Mercado' = SUM(FACT_PLAYER_SEASON[MARKET_VALUE_EUR])
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		displayFolder: Medidas
+		lineageTag: e7cb7cd9-e279-43c8-a4f2-3b1ad923a700
+
+	column PLAYER_ID
+		dataType: double
+		lineageTag: 408b09ee-cc63-48da-8ecb-b8212a382783
+		summarizeBy: none
+		sourceColumn: PLAYER_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SEASON_ID
+		dataType: double
+		lineageTag: e2d99edd-2b90-40a3-97c8-018df1fa4899
+		summarizeBy: none
+		sourceColumn: SEASON_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CLUB_ID
+		dataType: double
+		lineageTag: eeebad5c-5f62-44a2-9f07-c878b40ec6f0
+		summarizeBy: none
+		sourceColumn: CLUB_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column COMPETITION_ID
+		dataType: string
+		lineageTag: a1cdc96c-4935-44e8-b752-896ccfe03fd2
+		summarizeBy: none
+		sourceColumn: COMPETITION_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column APPEARANCES_COUNT
+		dataType: double
+		lineageTag: f0bc8c75-362a-486f-9709-458514c3db2f
+		summarizeBy: sum
+		sourceColumn: APPEARANCES_COUNT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column MINUTES_PLAYED
+		dataType: double
+		lineageTag: 8425e0eb-7cf4-4f37-ac39-e2e0438ebc3b
+		summarizeBy: sum
+		sourceColumn: MINUTES_PLAYED
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column GOALS
+		dataType: double
+		lineageTag: 40db62a3-af24-4049-9d66-40a267f69670
+		summarizeBy: sum
+		sourceColumn: GOALS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ASSISTS
+		dataType: double
+		lineageTag: d3950566-dd3c-42d8-b6a9-3f8fe0164869
+		summarizeBy: sum
+		sourceColumn: ASSISTS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column YELLOW_CARDS
+		dataType: double
+		lineageTag: cdac3415-75d5-4c73-b3ad-150024e51021
+		summarizeBy: sum
+		sourceColumn: YELLOW_CARDS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column RED_CARDS
+		dataType: double
+		lineageTag: c76980ea-18a8-4178-ac4e-74b028fae57b
+		summarizeBy: sum
+		sourceColumn: RED_CARDS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TIER
+		dataType: string
+		lineageTag: 63bbccee-fbae-442c-814b-5fbddd2cad95
+		summarizeBy: none
+		sourceColumn: TIER
+
+		annotation SummarizationSetBy = Automatic
+
+	column SCORE
+		dataType: int64
+		lineageTag: d822c3c1-cbbe-4fa9-ada9-5777969a1a7c
+		summarizeBy: sum
+		sourceColumn: SCORE
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column MARKET_VALUE_EUR
+		dataType: int64
+		formatString: "€"\ #,0.00;-"€"\ #,0.00;"€"\ #,0.00
+		lineageTag: ebfd50b2-0c09-4d3e-80ff-3be660bf829d
+		summarizeBy: sum
+		sourceColumn: MARKET_VALUE_EUR
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = User
+
+	partition FACT_PLAYER_SEASON = m
+		mode: import
+		source =
+				let
+				    Origen = Snowflake.Databases("DOOHLLX-DU69027.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    FOOTBALL_Database = Origen{[Name="FOOTBALL",Kind="Database"]}[Data],
+				    GOLD_Schema = FOOTBALL_Database{[Name="GOLD",Kind="Schema"]}[Data],
+				    FACT_PLAYER_SEASON_Table = GOLD_Schema{[Name="FACT_PLAYER_SEASON",Kind="Table"]}[Data]
+				in
+				    FACT_PLAYER_SEASON_Table
+
+	annotation PBI_ResultType = Table
+

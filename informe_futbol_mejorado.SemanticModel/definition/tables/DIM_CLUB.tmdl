@@ -1,0 +1,160 @@
+table DIM_CLUB
+	lineageTag: 238a9d40-12d3-4113-b54c-060fc6483daf
+
+	column CLUB_ID
+		dataType: double
+		lineageTag: 6b1d90bc-74a7-4e27-b94c-03a3700a5b61
+		summarizeBy: none
+		sourceColumn: CLUB_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CLUB_CODE
+		dataType: string
+		lineageTag: d3784ea1-15a0-4664-ba54-6e96141d9755
+		summarizeBy: none
+		sourceColumn: CLUB_CODE
+
+		annotation SummarizationSetBy = Automatic
+
+	column CLUB_NAME
+		dataType: string
+		lineageTag: bf058c53-570c-4f1b-9a70-88ab16c3bed4
+		summarizeBy: none
+		sourceColumn: CLUB_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column DOMESTIC_COMPETITION_ID
+		dataType: string
+		lineageTag: e5aa161d-3ebb-4c94-8658-6148c49bdeed
+		summarizeBy: none
+		sourceColumn: DOMESTIC_COMPETITION_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column STADIUM_NAME
+		dataType: string
+		lineageTag: 2fe61780-d06b-4032-a0cd-b01023065eee
+		summarizeBy: none
+		sourceColumn: STADIUM_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column STADIUM_SEATS
+		dataType: double
+		lineageTag: 5f9373a1-2dd3-4db9-a47e-c4a66e495638
+		summarizeBy: sum
+		sourceColumn: STADIUM_SEATS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SQUAD_SIZE
+		dataType: double
+		lineageTag: b549399c-d040-4675-ad58-7a838185339a
+		summarizeBy: sum
+		sourceColumn: SQUAD_SIZE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column AVERAGE_AGE
+		dataType: double
+		lineageTag: 9cb3e038-6fb2-47ca-90ca-4fd47643c88f
+		summarizeBy: sum
+		sourceColumn: AVERAGE_AGE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FOREIGNERS_NUMBER
+		dataType: double
+		lineageTag: 7b3a36b6-2e82-4410-9030-cf3802250581
+		summarizeBy: sum
+		sourceColumn: FOREIGNERS_NUMBER
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FOREIGNERS_PERCENTAGE
+		dataType: double
+		lineageTag: 85d4b2f5-7537-49ba-a1c8-71c788702081
+		summarizeBy: sum
+		sourceColumn: FOREIGNERS_PERCENTAGE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column NATIONAL_TEAM_PLAYERS
+		dataType: double
+		lineageTag: f2396778-420b-48d5-86aa-eb2a8b2913f8
+		summarizeBy: sum
+		sourceColumn: NATIONAL_TEAM_PLAYERS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column COACH_NAME
+		dataType: string
+		lineageTag: bc67b8b0-59ba-4686-bf5d-33494e4edd5d
+		summarizeBy: none
+		sourceColumn: COACH_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column LAST_SEASON
+		dataType: double
+		lineageTag: f19d9266-6033-4854-bc6a-476d75b3ddf9
+		summarizeBy: sum
+		sourceColumn: LAST_SEASON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TOTAL_MARKET_VALUE
+		dataType: double
+		lineageTag: 87e1dbd8-f399-41fb-a031-9e6e2f764f0c
+		summarizeBy: sum
+		sourceColumn: TOTAL_MARKET_VALUE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column NET_TRANSFER_RECORD
+		dataType: string
+		lineageTag: e9dc57ee-b979-4e2c-9e83-a902603df7e4
+		summarizeBy: none
+		sourceColumn: NET_TRANSFER_RECORD
+
+		annotation SummarizationSetBy = Automatic
+
+	column URL
+		dataType: string
+		lineageTag: b1f7ece8-84d7-4468-b500-334fa6af0b99
+		summarizeBy: none
+		sourceColumn: URL
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DIM_CLUB = m
+		mode: import
+		source =
+				let
+				    Origen = Snowflake.Databases("DOOHLLX-DU69027.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    FOOTBALL_Database = Origen{[Name="FOOTBALL",Kind="Database"]}[Data],
+				    GOLD_Schema = FOOTBALL_Database{[Name="GOLD",Kind="Schema"]}[Data],
+				    DIM_CLUB_Table = GOLD_Schema{[Name="DIM_CLUB",Kind="Table"]}[Data]
+				in
+				    DIM_CLUB_Table
+

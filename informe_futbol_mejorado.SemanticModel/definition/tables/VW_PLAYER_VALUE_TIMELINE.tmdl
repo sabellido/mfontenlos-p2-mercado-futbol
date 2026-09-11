@@ -1,0 +1,99 @@
+table VW_PLAYER_VALUE_TIMELINE
+	lineageTag: c59aaf8e-8433-407e-a948-488137e208e5
+
+	column PLAYER_ID
+		dataType: double
+		lineageTag: a6a78a63-b40a-4bfb-9926-d00763352f2d
+		summarizeBy: none
+		sourceColumn: PLAYER_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column EVENT_DATE
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c86aefcd-7190-4e83-9bdc-224e3263ed4b
+		summarizeBy: none
+		sourceColumn: EVENT_DATE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column EVENT_TYPE
+		dataType: string
+		lineageTag: c285cdf3-b482-4f38-bb34-e538f31cee17
+		summarizeBy: none
+		sourceColumn: EVENT_TYPE
+
+		annotation SummarizationSetBy = Automatic
+
+	column MARKET_VALUE_EUR
+		dataType: double
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		lineageTag: 5dc6fe40-4051-4330-80d2-a6c63fd9d2e2
+		summarizeBy: sum
+		sourceColumn: MARKET_VALUE_EUR
+
+		annotation SummarizationSetBy = Automatic
+
+	column TRANSFER_FEE
+		dataType: double
+		formatString: "€"\ #,0;-"€"\ #,0;"€"\ #,0
+		lineageTag: 58a6047a-c81e-404c-8856-940a8bfb80dd
+		summarizeBy: sum
+		sourceColumn: TRANSFER_FEE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FROM_CLUB_ID
+		dataType: double
+		lineageTag: 91606844-d762-4c6d-be8c-140e63ae412e
+		summarizeBy: none
+		sourceColumn: FROM_CLUB_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TO_CLUB_ID
+		dataType: double
+		lineageTag: edc0f063-4fdb-43fb-98c9-75d16321f85a
+		summarizeBy: none
+		sourceColumn: TO_CLUB_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FROM_CLUB_NAME = LOOKUPVALUE(DIM_CLUB[CLUB_NAME], DIM_CLUB[CLUB_ID], VW_PLAYER_VALUE_TIMELINE[FROM_CLUB_ID])
+		dataType: string
+		lineageTag: 91b6d2f1-2a1a-4e3a-9c1a-2f6b7c9a0d1e
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column TO_CLUB_NAME = LOOKUPVALUE(DIM_CLUB[CLUB_NAME], DIM_CLUB[CLUB_ID], VW_PLAYER_VALUE_TIMELINE[TO_CLUB_ID])
+		dataType: string
+		lineageTag: 4d3c2b1a-0f9e-48d7-8c6b-5a4938271605
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition VW_PLAYER_VALUE_TIMELINE = m
+		mode: import
+		source =
+				let
+				    Origen = Snowflake.Databases("DOOHLLX-DU69027.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    FOOTBALL_Database = Origen{[Name="FOOTBALL",Kind="Database"]}[Data],
+				    GOLD_Schema = FOOTBALL_Database{[Name="GOLD",Kind="Schema"]}[Data],
+				    VW_PLAYER_VALUE_TIMELINE_View = GOLD_Schema{[Name="VW_PLAYER_VALUE_TIMELINE",Kind="View"]}[Data]
+				in
+				    VW_PLAYER_VALUE_TIMELINE_View
+
+	annotation PBI_ResultType = Table
+

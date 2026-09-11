@@ -1,0 +1,86 @@
+table DIM_SEASON
+	lineageTag: 9ac41474-bf31-48b1-8418-c42146ebf075
+
+	column SEASON_ID
+		dataType: double
+		lineageTag: 4031df29-a923-42d9-8ece-354c5c1231c9
+		summarizeBy: none
+		sourceColumn: SEASON_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SEASON_LABEL
+		dataType: string
+		lineageTag: 36710804-c0b1-463f-93e8-f0bd76f9f115
+		summarizeBy: none
+		sourceColumn: SEASON_LABEL
+
+		annotation SummarizationSetBy = Automatic
+
+	column START_YEAR
+		dataType: double
+		lineageTag: 1a6e004d-4585-4a39-8a15-02642d1b3826
+		summarizeBy: sum
+		sourceColumn: START_YEAR
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column END_YEAR
+		dataType: double
+		lineageTag: 511bb857-de34-4643-9b3a-6fb3a9908124
+		summarizeBy: sum
+		sourceColumn: END_YEAR
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SEASON_START_DATE
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a43bebbf-c1bb-410e-ae56-69fc24e426a6
+		summarizeBy: none
+		sourceColumn: SEASON_START_DATE
+
+		variation Variación
+			isDefault
+			relationship: f86a9a69-9f28-471a-a76d-7d8122bc7f53
+			defaultHierarchy: LocalDateTable_8cc713c7-69bc-4b3e-9cd7-41f30b2cab5f.'Jerarquía de fechas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column SEASON_END_DATE
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e1848d2c-9f9e-4d1e-8ab5-70cca1857bec
+		summarizeBy: none
+		sourceColumn: SEASON_END_DATE
+
+		variation Variación
+			isDefault
+			relationship: 492039f6-227a-4661-9eda-ad1dc49388ad
+			defaultHierarchy: LocalDateTable_b9eb561e-be09-4696-bc6d-64b3e9783fba.'Jerarquía de fechas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition DIM_SEASON = m
+		mode: import
+		source =
+				let
+				    Origen = Snowflake.Databases("DOOHLLX-DU69027.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    FOOTBALL_Database = Origen{[Name="FOOTBALL",Kind="Database"]}[Data],
+				    GOLD_Schema = FOOTBALL_Database{[Name="GOLD",Kind="Schema"]}[Data],
+				    DIM_SEASON_Table = GOLD_Schema{[Name="DIM_SEASON",Kind="Table"]}[Data]
+				in
+				    DIM_SEASON_Table
+
+	annotation PBI_ResultType = Table
+

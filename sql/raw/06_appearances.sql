@@ -1,13 +1,18 @@
 -- =====================================================================
 -- RAW · 06_appearances.sql
 -- Tabla: appearances.csv
---
--- TODO antes de ejecutar: sustituye <N> por el número real de columnas
--- del CSV (lo ves en el resultado del paso 1, es el ORDER_ID máximo + 1)
--- y añade esa misma cantidad de posiciones $1..$N en el paso 3.
 -- =====================================================================
 
--- 1. Descubrir columnas reales (nombres y orden)
+use DATABASE FOOTBALL;
+use SCHEMA RAW;
+
+-- 1. (Opcional) comprobar visualmente las columnas reales antes de crear
+-- la tabla. Ya no es imprescindible para el paso 3 (MATCH_BY_COLUMN_NAME
+-- empareja por nombre en tiempo de carga, no hace falta saber cuántas
+-- columnas tiene el CSV de antemano), pero es una buena forma de
+-- detectar nombres raros o columnas inesperadas antes de automatizar.
+
+/*
 SELECT *
 FROM TABLE(
   INFER_SCHEMA(
@@ -16,6 +21,8 @@ FROM TABLE(
     FILES => 'appearances.csv'
   )
 );
+*/
+
 
 -- 2. Tabla RAW generada desde el propio INFER_SCHEMA (todo STRING)
 CREATE OR REPLACE TABLE FOOTBALL.RAW.APPEARANCES
@@ -36,28 +43,33 @@ CREATE OR REPLACE TABLE FOOTBALL.RAW.APPEARANCES
     )
   );
 
--- Columnas de metadatos, añadidas al final (mismo orden que usa el pipe)
+-- Columnas de metadatos. Se rellenan solas en el COPY INTO del paso 3
+-- vía INCLUDE_METADATA, no hace falta tocarlas a mano nunca.
 ALTER TABLE FOOTBALL.RAW.APPEARANCES
   ADD COLUMN _SOURCE_FILE STRING,
              _LOADED_AT   TIMESTAMP_NTZ;
 
 -- 3. Pipe: ingesta automática vía Snowpipe + Event Grid.
--- Sin lista explícita de columnas: el SELECT debe producir <N>+2 valores
--- (<N> del CSV + 2 de metadatos) en el mismo orden que las columnas de
--- la tabla, para que Snowflake las inserte posicionalmente.
+-- MATCH_BY_COLUMN_NAME empareja cada columna del CSV con la columna del
+-- mismo nombre en la tabla (usa la cabecera real del archivo, gracias a
+-- PARSE_HEADER = TRUE en FF_CSV_INFER) — no hace falta saber cuántas
+-- columnas tiene el CSV ni en qué orden vienen. INCLUDE_METADATA rellena
+-- _SOURCE_FILE y _LOADED_AT automáticamente. ERROR_ON_COLUMN_COUNT_MISMATCH
+-- = FALSE es obligatorio en este modo porque la tabla tiene más columnas
+-- (las 2 de metadatos) que el propio CSV.
 CREATE OR REPLACE PIPE FOOTBALL.RAW.PIPE_APPEARANCES
   AUTO_INGEST = TRUE
   INTEGRATION = 'NI_AZURE_BLOB_EVENTS'
 AS
 COPY INTO FOOTBALL.RAW.APPEARANCES
-FROM (
-    SELECT $1,$2,$3,  -- <-- ajustar a $1..$<N> según el resultado del paso 1
-           METADATA$FILENAME,
-           CURRENT_TIMESTAMP()
-    FROM @stage_raw_blob
-)
+FROM @stage_raw_blob
+FILE_FORMAT = (FORMAT_NAME = 'FOOTBALL.RAW.FF_CSV_INFER', ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE)
 PATTERN = '.*appearances\\.csv'
-FILE_FORMAT = (FORMAT_NAME = 'FOOTBALL.RAW.FF_CSV_STANDARD');
+MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+INCLUDE_METADATA = (
+  _SOURCE_FILE = METADATA$FILENAME,
+  _LOADED_AT   = METADATA$START_SCAN_TIME
+);
 
 -- 4. Backfill del histórico ya subido antes de crear el pipe
 ALTER PIPE FOOTBALL.RAW.PIPE_APPEARANCES REFRESH;

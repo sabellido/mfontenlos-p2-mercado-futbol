@@ -1,0 +1,139 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 1.4093331472388955
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 2.8186662944777794,
+            "y": 249.71621702639169
+          },
+          "nodeIndex": "DIM_CLUB",
+          "nodeLineageTag": "238a9d40-12d3-4113-b54c-060fc6483daf",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 406.72353329384623,
+            "y": 487.89351890976508
+          },
+          "nodeIndex": "DIM_COMPETITION",
+          "nodeLineageTag": "825d4148-dad9-410c-8bf6-6fd4ddb7e848",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 1552.0184374859095,
+            "y": 646.22224158575341
+          },
+          "nodeIndex": "DIM_COUNTRY",
+          "nodeLineageTag": "b72c2418-cf12-49fc-b7ad-5ccd8b422384",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1295.7360209840836,
+            "y": 286.77733152275226
+          },
+          "nodeIndex": "DIM_PLAYER",
+          "nodeLineageTag": "ba88d46b-f4a4-4990-bea5-a28ee525679d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 551.21970808893457,
+            "y": 953.975180901743
+          },
+          "nodeIndex": "DIM_SEASON",
+          "nodeLineageTag": "9ac41474-bf31-48b1-8418-c42146ebf075",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 174.75731025762298,
+            "y": 870.24581012854765
+          },
+          "nodeIndex": "FACT_CLUB_GAME",
+          "nodeLineageTag": "2389769a-d914-4ba0-a611-11ebf6385ffb",
+          "size": {
+            "height": 356.37332588955576,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 979.05444474359285,
+            "y": 671.77000315190992
+          },
+          "nodeIndex": "FACT_PLAYER_SEASON",
+          "nodeLineageTag": "1d7a5990-ff19-462b-9f2d-cbb96b73bf05",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 861.19529262273488,
+            "y": 274.05818056197273
+          },
+          "nodeIndex": "FACT_TRANSFER",
+          "nodeLineageTag": "ce09ca09-769e-42f4-b718-a24670d784a4",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 1833.1997711914319,
+            "y": 471.69019850465315
+          },
+          "nodeIndex": "FACT_PLAYER_MARKET_VALUE",
+          "nodeLineageTag": "1b08e648-0e79-48a7-8347-78b6e324a5e9",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas las tablas",
+      "zoomValue": 70.95554390096882,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas las tablas",
+  "defaultDiagram": "Todas las tablas"
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "7e9bce31eb2641c5b936",
+  "position": {
+    "x": 90,
+    "y": 260,
+    "z": 0,
+    "height": 100,
+    "width": 1740,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "INFORME DE ANÁLISIS FUTBOLÍSTICO",
+                    "textStyle": {
+                      "fontSize": "44px",
+                      "fontWeight": "bold",
+                      "color": "#FFFFFF",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "center"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Valoración de mercado y traspasos · Kaggle / Transfermarkt Player Scores",
+                    "textStyle": {
+                      "fontSize": "16px",
+                      "color": "#B8C0CC",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "center"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

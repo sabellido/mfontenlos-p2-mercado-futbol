@@ -1,0 +1,168 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "eb2c327abbdce03667cb",
+  "position": {
+    "x": 990,
+    "y": 372,
+    "z": 4000,
+    "height": 410,
+    "width": 890,
+    "tabOrder": 4000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_TRANSFER"
+                    }
+                  },
+                  "Property": "TRANSFER_DATE"
+                }
+              },
+              "queryRef": "FACT_TRANSFER.TRANSFER_DATE",
+              "nativeQueryRef": "TRANSFER_DATE",
+              "displayName": "Fecha"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_TRANSFER"
+                    }
+                  },
+                  "Property": "FROM_CLUB_NAME"
+                }
+              },
+              "queryRef": "FACT_TRANSFER.FROM_CLUB_NAME",
+              "nativeQueryRef": "FROM_CLUB_NAME",
+              "displayName": "Club de Origen"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FACT_TRANSFER"
+                    }
+                  },
+                  "Property": "TO_CLUB_NAME"
+                }
+              },
+              "queryRef": "FACT_TRANSFER.TO_CLUB_NAME",
+              "nativeQueryRef": "TO_CLUB_NAME",
+              "displayName": "Club Destino"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "FACT_TRANSFER"
+                        }
+                      },
+                      "Property": "TRANSFER_FEE"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(FACT_TRANSFER.TRANSFER_FEE)",
+              "nativeQueryRef": "TRANSFER_FEE",
+              "displayName": "Importe"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "FACT_TRANSFER"
+                  }
+                },
+                "Property": "TRANSFER_DATE"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "13D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Historial de Transferencias'"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

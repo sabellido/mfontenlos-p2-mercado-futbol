@@ -1,0 +1,126 @@
+table FACT_CLUB_GAME
+	lineageTag: 2389769a-d914-4ba0-a611-11ebf6385ffb
+
+	column GAME_ID
+		dataType: double
+		lineageTag: fe996d48-7785-482a-be6a-31891ea3d9cf
+		summarizeBy: count
+		sourceColumn: GAME_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CLUB_ID
+		dataType: double
+		lineageTag: ff4a384e-3564-482d-9901-33229cb54c54
+		summarizeBy: none
+		sourceColumn: CLUB_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SEASON_ID
+		dataType: double
+		lineageTag: ab38e379-6003-4b03-87d4-ca8a6869e45c
+		summarizeBy: none
+		sourceColumn: SEASON_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column COMPETITION_ID
+		dataType: string
+		lineageTag: be1e4a60-93e5-4e5e-8925-28076e29bd33
+		summarizeBy: none
+		sourceColumn: COMPETITION_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column GAME_DATE
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6398cebd-d956-476f-8094-7a3611d4a489
+		summarizeBy: none
+		sourceColumn: GAME_DATE
+
+		variation Variación
+			isDefault
+			relationship: e701d239-e239-4811-b15f-cdc0e3b2eac4
+			defaultHierarchy: LocalDateTable_48ea7046-f117-417f-968a-0c66c59ffc5e.'Jerarquía de fechas'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column OPPONENT_ID
+		dataType: double
+		lineageTag: 7804fcac-62aa-4276-b6ab-64de2aa2e18c
+		summarizeBy: count
+		sourceColumn: OPPONENT_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column OWN_GOALS
+		dataType: double
+		lineageTag: 7df5a528-7186-40ed-b523-5384a3d79155
+		summarizeBy: sum
+		sourceColumn: OWN_GOALS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column OPPONENT_GOALS
+		dataType: double
+		lineageTag: 3b2c0e37-417a-4bbd-8451-6c0595ca11b0
+		summarizeBy: sum
+		sourceColumn: OPPONENT_GOALS
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column HOSTING
+		dataType: string
+		lineageTag: d6f8983a-90e3-47b2-a36b-ba14761e6cfe
+		summarizeBy: none
+		sourceColumn: HOSTING
+
+		annotation SummarizationSetBy = Automatic
+
+	column IS_WIN
+		dataType: double
+		lineageTag: e222c3a2-67b5-40ef-a9e0-57063e918bd2
+		summarizeBy: sum
+		sourceColumn: IS_WIN
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column RESULT
+		dataType: string
+		lineageTag: e226a048-3eca-4fa7-bc5e-214a7d630a33
+		summarizeBy: none
+		sourceColumn: RESULT
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FACT_CLUB_GAME = m
+		mode: import
+		source =
+				let
+				    Origen = Snowflake.Databases("DOOHLLX-DU69027.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    FOOTBALL_Database = Origen{[Name="FOOTBALL",Kind="Database"]}[Data],
+				    GOLD_Schema = FOOTBALL_Database{[Name="GOLD",Kind="Schema"]}[Data],
+				    FACT_CLUB_GAME_Table = GOLD_Schema{[Name="FACT_CLUB_GAME",Kind="Table"]}[Data]
+				in
+				    FACT_CLUB_GAME_Table
+
+	annotation PBI_ResultType = Table
+

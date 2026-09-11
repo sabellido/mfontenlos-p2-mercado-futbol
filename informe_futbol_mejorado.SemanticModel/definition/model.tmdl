@@ -1,0 +1,35 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-ES
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["DIM_CLUB","DIM_COMPETITION","DIM_COUNTRY","DIM_PLAYER","DIM_SEASON","FACT_CLUB_GAME","FACT_PLAYER_SEASON","FACT_TRANSFER","FACT_PLAYER_MARKET_VALUE","VW_PLAYER_VALUE_TIMELINE"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table DIM_CLUB
+ref table DIM_COMPETITION
+ref table DIM_COUNTRY
+ref table DateTableTemplate_0ee711c2-7466-4282-984d-7a56a58230d9
+ref table DIM_PLAYER
+ref table LocalDateTable_183cd91d-4367-478d-bb1d-323268dc6ba5
+ref table LocalDateTable_34d09cba-3964-4b85-b6e3-98f2f22a526d
+ref table DIM_SEASON
+ref table LocalDateTable_8cc713c7-69bc-4b3e-9cd7-41f30b2cab5f
+ref table LocalDateTable_b9eb561e-be09-4696-bc6d-64b3e9783fba
+ref table FACT_CLUB_GAME
+ref table LocalDateTable_48ea7046-f117-417f-968a-0c66c59ffc5e
+ref table FACT_PLAYER_SEASON
+ref table FACT_TRANSFER
+ref table LocalDateTable_e6216584-dbff-4848-9584-c4c3a3bf09d7
+ref table FACT_PLAYER_MARKET_VALUE
+ref table VW_PLAYER_VALUE_TIMELINE
+
+ref cultureInfo es-ES
+

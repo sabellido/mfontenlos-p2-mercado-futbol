@@ -1,0 +1,54 @@
+table DIM_COUNTRY
+	lineageTag: b72c2418-cf12-49fc-b7ad-5ccd8b422384
+
+	column COUNTRY_NAME
+		dataType: string
+		lineageTag: 7dc3fb7d-5688-4a45-9d56-3703a9f7688d
+		summarizeBy: none
+		sourceColumn: COUNTRY_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column COUNTRY_ID
+		dataType: double
+		lineageTag: 54f472f2-2e34-4852-be16-9d79e6b0dea6
+		summarizeBy: count
+		sourceColumn: COUNTRY_ID
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column COUNTRY_LATITUDE
+		dataType: double
+		lineageTag: b69a1a6f-83b6-4bdd-af22-aaca61e54c2a
+		summarizeBy: sum
+		sourceColumn: COUNTRY_LATITUDE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column COUNTRY_LONGITUDE
+		dataType: double
+		lineageTag: cf514b59-f20c-47b8-8946-7f0e85ada924
+		summarizeBy: sum
+		sourceColumn: COUNTRY_LONGITUDE
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition DIM_COUNTRY = m
+		mode: import
+		source =
+				let
+				    Origen = Snowflake.Databases("DOOHLLX-DU69027.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    FOOTBALL_Database = Origen{[Name="FOOTBALL",Kind="Database"]}[Data],
+				    GOLD_Schema = FOOTBALL_Database{[Name="GOLD",Kind="Schema"]}[Data],
+				    DIM_COUNTRY_Table = GOLD_Schema{[Name="DIM_COUNTRY",Kind="Table"]}[Data]
+				in
+				    DIM_COUNTRY_Table
+
+	annotation PBI_ResultType = Table
+

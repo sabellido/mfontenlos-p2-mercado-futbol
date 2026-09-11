@@ -1,5 +1,7 @@
 # RAW
 
+*(Parte de la [arquitectura general](../../README.md) · Siguientes etapas: [SILVER](../silver/README.md) · [GOLD](../gold/README.md))*
+
 Capa de aterrizaje de los datos tal cual llegan del CSV, sin limpiar ni tipar. Es una copia fiel del archivo fuente dentro de Snowflake.
 
 ## Decisiones de diseño
@@ -7,11 +9,6 @@ Capa de aterrizaje de los datos tal cual llegan del CSV, sin limpiar ni tipar. E
 **Todas las columnas son STRING.** Aunque `INFER_SCHEMA` sugiere tipos (por ejemplo `NUMBER` para `country_id`), los ignoramos a propósito. El motivo es que RAW tiene que aceptar el archivo *siempre*, incluso si viene con un valor mal formado, un campo vacío o un texto donde se esperaba un número. Si tipáramos aquí, una sola fila rara podría tumbar toda la carga. Ese control de calidad y conversión de tipos se hace de forma segura en SILVER (con `TRY_CAST`, que convierte a `NULL` en vez de fallar).
 
 **Columnas de metadatos (`_SOURCE_FILE`, `_LOADED_AT`).** No vienen del CSV, las añadimos nosotros en la carga. Dan trazabilidad: de qué archivo concreto y en qué momento llegó cada fila. Esto es necesario en cuanto la ingesta es automática (Snowpipe) y pueden llegar varias cargas de golpe sin que nadie lo esté mirando en directo.
-
-**Dos file formats (`FF_CSV_INFER` y `FF_CSV_STANDARD`).** `PARSE_HEADER` (necesario para que `INFER_SCHEMA` lea los nombres reales de columna) y `SKIP_HEADER` (necesario para saltar la cabecera al cargar filas con `COPY INTO`) son mutuamente excluyentes en Snowflake, así que no se puede resolver con un único file format:
-
-- `FF_CSV_INFER`: solo se usa una vez por tabla nueva, para descubrir el nombre y orden real de las columnas antes de escribir el `CREATE TABLE`.
-- `FF_CSV_STANDARD`: es el que se usa en la carga real de datos (`COPY INTO` manual y, después, en el `COPY INTO` del pipe de Snowpipe).
 
 **Storage Integration en vez de SAS token.** El acceso de Snowflake al contenedor de Azure Blob se hace vía Azure AD (Service Principal gestionado por Azure, con el rol RBAC "Storage Blob Data Reader"), no con un SAS token embebido en el `CREATE STAGE`. Un SAS token caduca y hay que rotarlo a mano; la integration es la vía recomendada por Snowflake para producción porque el control de acceso vive en Azure RBAC, de forma centralizada.
 
@@ -33,16 +30,17 @@ Tres matices a tener en cuenta:
 - **Es por archivo, no por tabla.** Cada pipe reacciona solo a los archivos que coinciden con su `PATTERN`. Cada tabla RAW necesita su propio pipe (`PIPE_COMPETITIONS`, `PIPE_CLUBS`...); si un archivo no tiene pipe, sigue necesitando `COPY INTO` manual.
 - **No hace backfill de lo que ya estaba antes de crear el pipe**, salvo que se lo pidamos explícitamente con `ALTER PIPE ... REFRESH` (ver más abajo).
 
-**Sin lista explícita de columnas en el `COPY INTO` del pipe.** El `SELECT` interno produce los valores en el mismo orden que las columnas de la tabla (las del CSV, en el orden de `INFER_SCHEMA`, seguidas de `_SOURCE_FILE` y `_LOADED_AT`, añadidas siempre al final). Como el orden y la cantidad coinciden, Snowflake inserta posicionalmente sin ambigüedad. Esto es justo lo que evita el error *"Insert value list does not match column list"*: si se declara una lista de columnas a mano y se olvida una, o no coincide con el número de valores del `SELECT`, revienta; quitando la lista explícita, la única fuente de verdad sobre "qué va en cada columna" es el orden de creación de la tabla, que ya generamos automáticamente con `USING TEMPLATE`.
+`MATCH_BY_COLUMN_NAME` + `INCLUDE_METADATA` Snowflake lee la cabecera real del CSV (gracias a `PARSE_HEADER = TRUE`) y empareja cada columna del archivo con la columna del mismo nombre en la tabla, sea cual sea el número de columnas o el orden en que vengan. `INCLUDE_METADATA = (_SOURCE_FILE = METADATA$FILENAME, _LOADED_AT = METADATA$START_SCAN_TIME)` hace lo mismo para las dos columnas de metadatos, que no vienen en el CSV. El resultado: el mismo `CREATE PIPE` funciona para cualquier tabla sin tocar nada más que el nombre de la tabla y del archivo — no hay ningún valor que haya que calcular o contar a mano.
+
+Un detalle técnico obligatorio en este modo: `ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE` en el `FILE_FORMAT` del `COPY INTO`. Sin él, Snowflake se queja de que la tabla tiene más columnas que el archivo (las 2 de metadatos) — cosa que aquí es intencional, no un error.
 
 **`ALTER PIPE ... REFRESH` en vez de un `COPY INTO` manual de validación.** Un pipe recién creado solo reacciona a eventos *nuevos*: el archivo que ya estaba en Blob antes de crear el pipe no se carga solo. En vez de mantener un `COPY INTO` manual aparte (que sería una segunda vía de carga, redundante con el pipe y fácil de desincronizar), usamos `REFRESH`, el mecanismo propio de Snowpipe para decirle "revisa el stage y encola también lo que ya estaba ahí". Así hay una única vía de carga (el pipe), tanto para el histórico como para lo nuevo.
 
 ## Estructura
 
-- `00_setup.sql` — objetos compartidos por toda la capa: base de datos, schema, storage integration, stage, los dos file formats y la notification integration. Nada específico de una tabla concreta va aquí.
-- `01_<tabla>.sql`, `02_<tabla>.sql`... — un archivo por tabla origen, cada uno de principio a fin: descubrir columnas (`INFER_SCHEMA`) → crear tabla (`CREATE TABLE ... USING TEMPLATE`) → añadir metadatos (`ALTER TABLE`) → crear el pipe → `REFRESH` para el histórico ya existente.
+- `00_setup.sql` — objetos compartidos por toda la capa: base de datos, schema, storage integration, stage, el file format y la notification integration. Nada específico de una tabla concreta va aquí.
+- `01_<tabla>.sql`, `02_<tabla>.sql`... — un archivo por tabla origen, cada uno de principio a fin: descubrir columnas (`INFER_SCHEMA`, opcional/informativo) → crear tabla (`CREATE TABLE ... USING TEMPLATE`) → añadir metadatos (`ALTER TABLE`) → crear el pipe (`MATCH_BY_COLUMN_NAME` + `INCLUDE_METADATA`) → `REFRESH` para el histórico ya existente. No hay ningún valor que rellenar a mano en ninguno de los archivos: son ejecutables tal cual, solo cambiando qué archivo ejecutas.
 
 ## Tablas
 
-- `competitions` — hecha de principio a fin (tabla + pipe funcionando).
-- `clubs`, `players`, `games`, `club_games`, `appearances`, `player_valuations`, `transfers`, `countries` — archivo generado con la misma plantilla, pendiente de rellenar: hay que ejecutar el paso 1 (`INFER_SCHEMA`) de cada uno, ver cuántas columnas tiene el CSV, y ajustar el número de `$1..$N` en el paso 3 (marcado con `-- TODO` en el propio archivo).
+`competitions`, `clubs`, `players`, `games`, `club_games`, `appearances`, `player_valuations`, `transfers`, `countries` — los 9 tienen ya su archivo completo en `01_...` a `09_...`, listos para ejecutar sin ediciones.
